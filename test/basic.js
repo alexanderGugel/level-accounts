@@ -9,10 +9,10 @@ var id;
 
 test('valid signup', function(t) {
     t.plan(2);
-    db.accounts.signup('alex', '$ecret', function(error, _id) {
+    db.accounts.signup('alex', '$ecret', function(error, user) {
         t.equal(error, null);
-        t.equal(typeof _id, 'string');
-        id = _id;
+        id = user.id;
+        t.deepEqual(user, {id: id, username: 'alex', password: '$ecret', tokens: [] });
     });
 });
 
@@ -28,7 +28,7 @@ test('valid getById', function(t) {
     t.plan(2);
     db.accounts.getById(id, function(error, user) {
         t.equal(error, null);
-        t.deepEqual(user, {id: id, username: 'alex', password: '$ecret'});
+        t.deepEqual(user, {id: id, username: 'alex', password: '$ecret', tokens: []});
     }); 
 });
 
@@ -44,7 +44,7 @@ test('valid getByUsername', function(t) {
     t.plan(2);
     db.accounts.getByUsername('alex', function(error, user) {
         t.equal(error, null);
-        t.deepEqual(user, {id: id, username: 'alex', password: '$ecret'});
+        t.deepEqual(user, {id: id, username: 'alex', password: '$ecret', tokens: []});
     }); 
 });
 
@@ -56,38 +56,41 @@ test('invalid getByUsername', function(t) {
     }); 
 });
 
+var token;
 
+test('valid signin', function(t) {
+    t.plan(4);
+    db.accounts.signin('alex', '$ecret', function(error, user) {
+        t.equal(error, null);
+        t.equal(user.tokens instanceof Array, true);
+        t.equal(user.tokens.length, 1);
+        token = user.tokens[0];
+        delete user.tokens;
+        t.deepEqual(user, {id: id, username: 'alex', password: '$ecret'});
+    });
+});
 
-// var token;
+test('invalid signin', function(t) {
+    t.plan(2);
+    db.accounts.signin('alex', '$nvalid', function(error, user) {
+        t.notEqual(error, null);
+        t.equal(user, undefined);
+    });
+});
 
-// test('valid signin', function(t) {
-//     t.plan(2);
-//     db.accounts.signin('alex', '$ecret', function(error, _token) {
-//         t.notOk(error);
-//         t.equal(typeof _token, 'string');
-//         token = _token;
-//     });
-// });
+test('valid getByToken', function(t) {
+    t.plan(2);
+    db.accounts.getByToken(token, function(error, user) {
+        t.equal(error, null);
+        delete user.tokens;
+        t.deepEqual(user, {id: id, username: 'alex', password: '$ecret'});
+    });
+});
 
-// test('invalid signin', function(t) {
-//     t.plan(2);
-//     db.accounts.signin('alex', '$nvalid', function(error, _token) {
-//         t.notEqual(error, null);
-//         t.equal(_token, null);
-//     });
-// });
-
-// test('valid auth', function(t) {
-//     t.plan(2);
-//     db.accounts.auth(token, function(error) {
-//         t.notOk(error);
-//     });
-// });
-
-// test('invalid auth', function(t) {
-//     t.plan(1);
-//     db.accounts.auth('invalid token', function(error) {
-//         t.notEqual(error, null);
-//     });
-// });
-
+test('invalid getByToken', function(t) {
+    t.plan(2);
+    db.accounts.getByToken('invalid token', function(error, user) {
+        t.notEqual(error, null);
+        t.equal(user, undefined);
+    });
+});

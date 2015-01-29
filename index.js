@@ -8,6 +8,7 @@ var Accounts = function (db) {
     this.prefix = 'accounts:';
     this.userPrefix = 'user:';
     this.usernamePrefix = 'username:';
+    this.tokenPrefix = 'token:';
 };
 
 Accounts.prototype.signup = function (username, password, callback) {
@@ -18,29 +19,28 @@ Accounts.prototype.signup = function (username, password, callback) {
         if (!error) return callback(new Error('User already exists'));
         if (!error.message.match(/Key\ not\ found/)) return callback(error);
 
-        var id = uuid.v4();
-        var user = {id: id, username: username, password: password};
+        var user = {id: uuid.v4(), username: username, password: password, tokens: []};
 
         // User does not exist
         this.db.batch()
-        .put(this.prefix + this.usernamePrefix + username, id, {
+        .put(this.prefix + this.usernamePrefix + username, user.id, {
             keyEncoding: 'utf8',
             valueEncoding: 'utf8'
         })
-        .put(this.prefix + this.userPrefix + id, user, {
+        .put(this.prefix + this.userPrefix + user.id, user, {
             keyEncoding: 'utf8',
             valueEncoding: 'json'
         })
         .write(function (error) {
             if (error) return callback(error);
-            callback(null, id);
+            callback(null, user);
         });
     }.bind(this));
     return this;
 };
 
 Accounts.prototype.getById = function (id, callback) {
-    if (typeof id !== 'string' || id.length === 0) return callback(new Error('Missing user id'));
+    if (typeof id !== 'string' || id.length === 0) return callback(new Error('Missing id'));
     this.db.get(this.prefix + this.userPrefix + id, {
         keyEncoding: 'utf8',
         valueEncoding: 'json'
@@ -65,9 +65,45 @@ Accounts.prototype.getByUsername = function (username, callback) {
 
 Accounts.prototype.signin = function (username, password, callback) {
     if (!_validateUsernamePassword(username, password, callback)) return;
+    this.getByUsername(username, function(error, user) {
+        if (error) return callback(error);
+        if (user.password !== password) {
+            callback(new Error('Invalid password'));
+        } else {
+            this._createToken(user, callback);
+        }
+    }.bind(this));
+    return this;
 };
 
-Accounts.prototype.auth = function (token, callback) {
+Accounts.prototype._createToken = function(user, callback){
+    var token = uuid.v4();
+    user.tokens.push(token);
+    this.db.batch()
+    .put(this.prefix + this.tokenPrefix + token, user.id, {
+        keyEncoding: 'utf8',
+        valueEncoding: 'utf8'
+    })
+    .put(this.prefix + this.userPrefix + user.id, user, {
+        keyEncoding: 'utf8',
+        valueEncoding: 'json'
+    })
+    .write(function (error) {
+        if (error) return callback(error);
+        callback(null, user);
+    });
+};
+
+Accounts.prototype.getByToken = function (token, callback) {
+    if (typeof token !== 'string' || token.length === 0) return callback(new Error('Missing user token'));
+    this.db.get(this.prefix + this.tokenPrefix + token, {
+        keyEncoding: 'utf8',
+        valueEncoding: 'utf8'
+    }, function(error, id) {
+        if (error && error.message.match(/Key\ not\ found/)) return callback(new Error('Invalid token'));
+        if (error) return callback(error);
+        this.getById(id, callback);
+    }.bind(this));
 };
 
 function _validateUsernamePassword(username, password, callback) {
