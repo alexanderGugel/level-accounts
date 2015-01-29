@@ -1,0 +1,19 @@
+{
+  "name": "level-accounts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "rm -rf test/db && tape test/*.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "level": "^0.18.0",
+    "tap-nyan": "0.0.2",
+    "tape": "^3.4.0"
+  },
+  "dependencies": {
+    "node-uuid": "^1.4.2"
+  }
+}
