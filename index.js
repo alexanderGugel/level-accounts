@@ -30,7 +30,8 @@ Accounts.prototype._put = function(user, callback){
 
 Accounts.prototype.put = function(user, callback){
     this.db.get(this.prefix + this.usernamePrefix + user.username, {
-        keyEncoding: 'utf8'
+        keyEncoding: 'utf8',
+        valueEncoding: 'utf8'
     }, function (error) {
         if (!error) return callback(new Error('User already exists'));
         if (!error.message.match(/Key\ not\ found/)) return callback(error);
@@ -147,7 +148,24 @@ Accounts.prototype.getByToken = function (token, callback) {
 };
 
 Accounts.prototype.changeUsername = function(token, newUsername, callback){
+    // this.getByToken(token, function (error, user) {
+    //     if (error && error.message.match(/Invalid\ token/)) return callback(error);
+    //     if (error) return callback(error);
 
+
+    // }.bind(this));
+    // this.db.get(this.prefix + this.usernamePrefix + newUsername, {
+    //     keyEncoding: 'utf8',
+    //     valueEncoding: 'utf8'
+    // }, function (error) {
+    //     if (!error || !error.message.match(/Key\ not\ found/)) return callback(error);
+
+    //     this.del(token, function (error) {
+    //         if (error) return callback(error);
+
+    //         this.put
+    //     }.bind(this));
+    // }.bind(this));
 };
 
 
