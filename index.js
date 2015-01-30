@@ -6,13 +6,13 @@ var Accounts = function (db) {
     this.db = db;
     db.accounts = this;
     this.prefix = 'accounts:';
-    this.userPrefix = 'user:';
-    this.usernamePrefix = 'username:';
-    this.tokenPrefix = 'token:';
+    this.idToUserPrefix = 'id>user:';
+    this.usernameToIdPrefix = 'username>id:';
+    this.tokenToIdPrefix = 'token>id:';
 };
 
 Accounts.prototype.createUser = function(user, callback){
-    this.db.get(this.prefix + this.usernamePrefix + user.username, {
+    this.db.get(this.prefix + this.usernameToIdPrefix + user.username, {
         keyEncoding: 'utf8',
         valueEncoding: 'utf8'
     }, function (error) {
@@ -21,11 +21,11 @@ Accounts.prototype.createUser = function(user, callback){
 
         // User does not exist
         this.db.batch()
-        .put(this.prefix + this.usernamePrefix + user.username, user.id, {
+        .put(this.prefix + this.usernameToIdPrefix + user.username, user.id, {
             keyEncoding: 'utf8',
             valueEncoding: 'utf8'
         })
-        .put(this.prefix + this.userPrefix + user.id, user, {
+        .put(this.prefix + this.idToUserPrefix + user.id, user, {
             keyEncoding: 'utf8',
             valueEncoding: 'json'
         })
@@ -42,11 +42,11 @@ Accounts.prototype.deleteByToken = function(token, callback){
         if (error) return callback(error);
 
         this.db.batch()
-        .del(this.prefix + this.usernamePrefix + user.username, {
+        .del(this.prefix + this.usernameToIdPrefix + user.username, {
             keyEncoding: 'utf8',
             valueEncoding: 'utf8'
         })
-        .del(this.prefix + this.userPrefix + user.id, {
+        .del(this.prefix + this.idToUserPrefix + user.id, {
             keyEncoding: 'utf8',
             valueEncoding: 'json'
         })
@@ -65,7 +65,7 @@ Accounts.prototype.signup = function (username, password, callback) {
 };
 
 Accounts.prototype.getById = function (id, callback) {
-    this.db.get(this.prefix + this.userPrefix + id, {
+    this.db.get(this.prefix + this.idToUserPrefix + id, {
         keyEncoding: 'utf8',
         valueEncoding: 'json'
     }, function(error, user) {
@@ -76,7 +76,7 @@ Accounts.prototype.getById = function (id, callback) {
 };
 
 Accounts.prototype.getByUsername = function (username, callback) {
-    this.db.get(this.prefix + this.usernamePrefix + username, {
+    this.db.get(this.prefix + this.usernameToIdPrefix + username, {
         keyEncoding: 'utf8',
         valueEncoding: 'utf8'
     }, function(error, id) {
@@ -95,11 +95,11 @@ Accounts.prototype.signin = function (username, password, callback) {
             var token = uuid.v4();
             user.tokens.push(token);
             this.db.batch()
-            .put(this.prefix + this.tokenPrefix + token, user.id, {
+            .put(this.prefix + this.tokenToIdPrefix + token, user.id, {
                 keyEncoding: 'utf8',
                 valueEncoding: 'utf8'
             })
-            .put(this.prefix + this.userPrefix + user.id, user, {
+            .put(this.prefix + this.idToUserPrefix + user.id, user, {
                 keyEncoding: 'utf8',
                 valueEncoding: 'json'
             })
@@ -113,7 +113,7 @@ Accounts.prototype.signin = function (username, password, callback) {
 };
 
 Accounts.prototype.getByToken = function (token, callback) {
-    this.db.get(this.prefix + this.tokenPrefix + token, {
+    this.db.get(this.prefix + this.tokenToIdPrefix + token, {
         keyEncoding: 'utf8',
         valueEncoding: 'utf8'
     }, function(error, id) {
@@ -137,7 +137,7 @@ Accounts.prototype.changeUsername = function(token, newUsername, callback){
             if (error) return callback(error);
 
             // delete old username
-            this.db.del(this.prefix + this.usernamePrefix + oldUsername, {
+            this.db.del(this.prefix + this.usernameToIdPrefix + oldUsername, {
                 keyEncoding: 'utf8',
                 valueEncoding: 'utf8'
             }, function(error) {
@@ -155,7 +155,7 @@ Accounts.prototype.changePassword = function(token, newPassword, callback){
 
         user.password = newPassword;
 
-        this.db.put(this.prefix + this.userPrefix + user.id, user, {
+        this.db.put(this.prefix + this.idToUserPrefix + user.id, user, {
             keyEncoding: 'utf8',
             valueEncoding: 'json'
         }, function (error) {
