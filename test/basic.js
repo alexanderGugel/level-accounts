@@ -94,3 +94,18 @@ test('invalid getByToken', function(t) {
         t.equal(user, undefined);
     });
 });
+
+// test('del', function(t) {
+//     t.plan(3);
+//     db.accounts.del(token, function(error) {
+//         t.equal(error, null);
+
+//         db.accounts.del(token, function(error) {
+//             t.notEqual(error, null);
+
+//             db.accounts.getByToken(token, function(error) {
+//                 t.notEqual(error, null);
+//             });
+//         });
+//     });
+// });

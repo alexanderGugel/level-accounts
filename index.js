@@ -11,6 +11,42 @@ var Accounts = function (db) {
     this.tokenPrefix = 'token:';
 };
 
+Accounts.prototype._putUser = function(user, callback){
+    this.db.batch()
+    .put(this.prefix + this.usernamePrefix + user.username, user.id, {
+        keyEncoding: 'utf8',
+        valueEncoding: 'utf8'
+    })
+    .put(this.prefix + this.userPrefix + user.id, user, {
+        keyEncoding: 'utf8',
+        valueEncoding: 'json'
+    })
+    .write(function (error) {
+        if (error) return callback(error);
+        callback(null, user);
+    });
+};
+
+Accounts.prototype.del = function(token, callback){
+    this.getByToken(token, function(error, user) {
+        if (error) return callback(error);
+
+        this.db.batch()
+        .del(this.prefix + this.usernamePrefix + user.username, {
+            keyEncoding: 'utf8',
+            valueEncoding: 'utf8'
+        })
+        .del(this.prefix + this.userPrefix + user.id, {
+            keyEncoding: 'utf8',
+            valueEncoding: 'json'
+        })
+        .write(function (error) {
+            if (error) return callback(error);
+            callback(null, true);
+        });  
+    }.bind(this));
+};
+
 Accounts.prototype.signup = function (username, password, callback) {
     if (!_validateUsernamePassword(username, password, callback)) return;
     this.db.get(this.prefix + this.usernamePrefix + username, {
@@ -22,19 +58,7 @@ Accounts.prototype.signup = function (username, password, callback) {
         var user = {id: uuid.v4(), username: username, password: password, tokens: []};
 
         // User does not exist
-        this.db.batch()
-        .put(this.prefix + this.usernamePrefix + username, user.id, {
-            keyEncoding: 'utf8',
-            valueEncoding: 'utf8'
-        })
-        .put(this.prefix + this.userPrefix + user.id, user, {
-            keyEncoding: 'utf8',
-            valueEncoding: 'json'
-        })
-        .write(function (error) {
-            if (error) return callback(error);
-            callback(null, user);
-        });
+        this._putUser(user, callback);
     }.bind(this));
     return this;
 };
@@ -105,6 +129,13 @@ Accounts.prototype.getByToken = function (token, callback) {
         this.getById(id, callback);
     }.bind(this));
 };
+
+Accounts.prototype.changeUsername = function(token, newUsername, callback){
+
+};
+
+
+
 
 function _validateUsernamePassword(username, password, callback) {
     if (
