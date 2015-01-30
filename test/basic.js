@@ -109,3 +109,24 @@ test('invalid getByToken', function(t) {
 //         });
 //     });
 // });
+
+
+test('changeUsername', function(t) {
+    t.plan(4);
+    db.accounts.changeUsername(token, 'not_alex', function(error, newUser) {
+        t.equal(error, null);
+
+        delete newUser.tokens;
+
+        db.accounts.signin('not_alex', '$ecret', function (error, user) {
+            t.equal(error, null);
+            delete user.tokens;
+            t.deepEqual(user, newUser);
+        });
+        
+        db.accounts.signin('alex', '$ecret', function (error) {
+            t.notEqual(error, null);
+        });
+    });
+});
+

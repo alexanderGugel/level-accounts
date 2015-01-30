@@ -41,22 +41,18 @@ Accounts.prototype.deleteByToken = function(token, callback){
     this.getByToken(token, function(error, user) {
         if (error) return callback(error);
 
-        this._del(user, function(error) {
+        this.db.batch()
+        .del(this.prefix + this.usernamePrefix + user.username, {
+            keyEncoding: 'utf8',
+            valueEncoding: 'utf8'
+        })
+        .del(this.prefix + this.userPrefix + user.id, {
+            keyEncoding: 'utf8',
+            valueEncoding: 'json'
+        })
+        .write(function (error) {
             if (error) return callback(error);
-
-            this.db.batch()
-            .del(this.prefix + this.usernamePrefix + user.username, {
-                keyEncoding: 'utf8',
-                valueEncoding: 'utf8'
-            })
-            .del(this.prefix + this.userPrefix + user.id, {
-                keyEncoding: 'utf8',
-                valueEncoding: 'json'
-            })
-            .write(function (error) {
-                if (error) return callback(error);
-                callback(null);
-            });
+            callback(user);
         });
     }.bind(this));
     return this;
@@ -129,25 +125,35 @@ Accounts.prototype.getByToken = function (token, callback) {
 };
 
 Accounts.prototype.changeUsername = function(token, newUsername, callback){
-    // this.getByToken(token, function (error, user) {
-    //     if (error && error.message.match(/Invalid\ token/)) return callback(error);
-    //     if (error) return callback(error);
+    // ok, fetch old user
+    this.getByToken(token, function (error, user) {
+        if (error) return callback(error);
 
+        var oldUsername = user.username;
+        user.username = newUsername;
+        this.createUser(user, function(error, user) {
 
-    // }.bind(this));
-    // this.db.get(this.prefix + this.usernamePrefix + newUsername, {
-    //     keyEncoding: 'utf8',
-    //     valueEncoding: 'utf8'
-    // }, function (error) {
-    //     if (!error || !error.message.match(/Key\ not\ found/)) return callback(error);
+            // probably username not available
+            if (error) return callback(error);
 
-    //     this.del(token, function (error) {
-    //         if (error) return callback(error);
+            // delete old username
+            this.db.del(this.prefix + this.usernamePrefix + oldUsername, {
+                keyEncoding: 'utf8',
+                valueEncoding: 'utf8'
+            }, function(error) {
+                if (error) return callback(error);
 
-    //         this.put
-    //     }.bind(this));
-    // }.bind(this));
+                callback(null, user);
+            });
+        }.bind(this));
+    }.bind(this));
 };
+
+Accounts.prototype.changePassword = function(token, newPassword, callback){
+
+};
+
+
 
 
 module.exports = Accounts;
