@@ -150,7 +150,19 @@ Accounts.prototype.changeUsername = function(token, newUsername, callback){
 };
 
 Accounts.prototype.changePassword = function(token, newPassword, callback){
+    this.getByToken(token, function (error, user) {
+        if (error) return callback(error);
 
+        user.password = newPassword;
+
+        this.db.put(this.prefix + this.userPrefix + user.id, user, {
+            keyEncoding: 'utf8',
+            valueEncoding: 'json'
+        }, function (error) {
+            if (error) return callback(error);
+            callback(null, user);
+        }.bind(this));
+    }.bind(this));
 };
 
 

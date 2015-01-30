@@ -113,7 +113,7 @@ test('invalid getByToken', function(t) {
 
 test('changeUsername', function(t) {
     t.plan(4);
-    db.accounts.changeUsername(token, 'not_alex', function(error, newUser) {
+    db.accounts.changeUsername(token, 'not_alex', function (error, newUser) {
         t.equal(error, null);
 
         delete newUser.tokens;
@@ -125,6 +125,25 @@ test('changeUsername', function(t) {
         });
         
         db.accounts.signin('alex', '$ecret', function (error) {
+            t.notEqual(error, null);
+        });
+    });
+});
+
+test('changePassword', function(t) {
+    t.plan(4);
+    db.accounts.changePassword(token, 'geheim', function (error, newUser) {
+        t.equal(error, null);
+
+        delete newUser.tokens;
+
+        db.accounts.signin('not_alex', 'geheim', function (error, user) {
+            t.equal(error, null);
+            delete user.tokens;
+            t.deepEqual(user, newUser);
+        });
+        
+        db.accounts.signin('not_alex', '$ecret', function (error) {
             t.notEqual(error, null);
         });
     });
