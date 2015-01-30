@@ -11,7 +11,7 @@ var Accounts = function (db) {
     this.tokenPrefix = 'token:';
 };
 
-Accounts.prototype._putUser = function(user, callback){
+Accounts.prototype._put = function(user, callback){
     this.db.batch()
     .put(this.prefix + this.usernamePrefix + user.username, user.id, {
         keyEncoding: 'utf8',
@@ -25,41 +25,55 @@ Accounts.prototype._putUser = function(user, callback){
         if (error) return callback(error);
         callback(null, user);
     });
+    return this;
+};
+
+Accounts.prototype.put = function(user, callback){
+    this.db.get(this.prefix + this.usernamePrefix + user.username, {
+        keyEncoding: 'utf8'
+    }, function (error) {
+        if (!error) return callback(new Error('User already exists'));
+        if (!error.message.match(/Key\ not\ found/)) return callback(error);
+
+        // User does not exist
+        this._put(user, callback);
+    }.bind(this));
+    return this;
+};
+
+Accounts.prototype._del = function(user, callback){
+    this.db.batch()
+    .del(this.prefix + this.usernamePrefix + user.username, {
+        keyEncoding: 'utf8',
+        valueEncoding: 'utf8'
+    })
+    .del(this.prefix + this.userPrefix + user.id, {
+        keyEncoding: 'utf8',
+        valueEncoding: 'json'
+    })
+    .write(function (error) {
+        if (error) return callback(error);
+        callback(null);
+    });
+    return this;
 };
 
 Accounts.prototype.del = function(token, callback){
     this.getByToken(token, function(error, user) {
         if (error) return callback(error);
 
-        this.db.batch()
-        .del(this.prefix + this.usernamePrefix + user.username, {
-            keyEncoding: 'utf8',
-            valueEncoding: 'utf8'
-        })
-        .del(this.prefix + this.userPrefix + user.id, {
-            keyEncoding: 'utf8',
-            valueEncoding: 'json'
-        })
-        .write(function (error) {
+        this._del(user, function(error) {
             if (error) return callback(error);
-            callback(null, true);
-        });  
+            callback(null, user);
+        });
     }.bind(this));
+    return this;
 };
 
 Accounts.prototype.signup = function (username, password, callback) {
     if (!_validateUsernamePassword(username, password, callback)) return;
-    this.db.get(this.prefix + this.usernamePrefix + username, {
-        keyEncoding: 'utf8'
-    }, function (error) {
-        if (!error) return callback(new Error('User already exists'));
-        if (!error.message.match(/Key\ not\ found/)) return callback(error);
-
-        var user = {id: uuid.v4(), username: username, password: password, tokens: []};
-
-        // User does not exist
-        this._putUser(user, callback);
-    }.bind(this));
+    var user = {id: uuid.v4(), username: username, password: password, tokens: []};
+    this.put(user, callback);
     return this;
 };
 
@@ -94,13 +108,13 @@ Accounts.prototype.signin = function (username, password, callback) {
         if (user.password !== password) {
             callback(new Error('Invalid password'));
         } else {
-            this._createToken(user, callback);
+            this._putToken(user, callback);
         }
     }.bind(this));
     return this;
 };
 
-Accounts.prototype._createToken = function(user, callback){
+Accounts.prototype._putToken = function(user, callback){
     var token = uuid.v4();
     user.tokens.push(token);
     this.db.batch()
@@ -116,6 +130,7 @@ Accounts.prototype._createToken = function(user, callback){
         if (error) return callback(error);
         callback(null, user);
     });
+    return this;
 };
 
 Accounts.prototype.getByToken = function (token, callback) {
@@ -128,6 +143,7 @@ Accounts.prototype.getByToken = function (token, callback) {
         if (error) return callback(error);
         this.getById(id, callback);
     }.bind(this));
+    return this;
 };
 
 Accounts.prototype.changeUsername = function(token, newUsername, callback){
