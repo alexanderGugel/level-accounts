@@ -4,7 +4,6 @@ var db = levelup('./test/db');
 require('../')(db);
 
 var test = require('tape');
-
 var id;
 
 test('valid signup', function(t) {

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Sign In!</title>
+    </head>
+    <body>
+        <form id="signin">
+            <h1>Sign In!</h1>
+            <input type="text" placeholder="Username" name="username" id="username">
+            <input type="password" placeholder="Password" name="password" id="password">
+            <button type="submit">Sign In!</button>
+        </form>
+        <a href="signup.html">Sign Up instead</a>
+        <script>
+            if (localStorage.getItem('token')) window.location = '/hello.html';
+            var $form = document.getElementById('signin');
+            var $username = document.getElementById('username');
+            var $password = document.getElementById('password');
+
+            $form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                var request = new XMLHttpRequest();
+                request.open('POST', '/api/tokens', true);
+                request.onload = function() {
+                    var data = JSON.parse(request.responseText);
+                    if (data.error) return alert(data.error);
+                    localStorage.setItem('token', data.token);
+                    window.location = '/index.html';
+                };
+                request.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+                request.send(JSON.stringify({ username: $username.value, password: $password.value }));
+            });
+        </script>
+    </body>
+</html>

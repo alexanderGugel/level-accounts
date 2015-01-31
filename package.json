@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "tape test/*.js; rm -rf test/db"
+    "test": "tape test/*.js | tap-nyan; rm -rf test/db",
+    "example": "node example/app.js"
   },
   "author": "",
   "license": "ISC",

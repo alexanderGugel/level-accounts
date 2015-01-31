@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Hello!</title>
+    </head>
+        <a href="/signout.html">Sign Out!</a>
+
+        <ul>
+            <li><strong>id:</strong> <span id="id"></span></li>
+            <li><strong>username:</strong> <span id="username"></span></li>
+            <li><strong>token:</strong> <span id="token"></span></li>
+        </ul>
+
+        <p>You are now logged in!</p>
+
+        <script>
+            if (!localStorage.getItem('token')) window.location = '/index.html';
+            var $id = document.getElementById('id');
+            var $username = document.getElementById('username');
+            var $token = document.getElementById('token');
+
+            var request = new XMLHttpRequest();
+            request.open('GET', '/api/tokens/' + localStorage.getItem('token'), true);
+            request.onload = function() {
+                if (request.status === 404) {
+                    localStorage.removeItem('token');
+                } else {
+                    var data = JSON.parse(request.responseText);
+                    $id.innerHTML = data.id;
+                    $username.innerHTML = data.username;
+                    $token.innerHTML = data.token;
+                }
+            };
+            request.send();
+        </script>
+    </body>
+</html>
