@@ -1,7 +1,7 @@
 level-accounts
 ==============
 
-Opinionated, simple and secure token-based authentication solution using LevelDB
+Opinionated, simple and pretty secure token-based authentication solution using LevelDB
 
 Example
 -------
@@ -15,7 +15,18 @@ db.accounts.signup('alex', 'pass', function(error, result) {
 });
 ```
 
+A more extensive example for usage in a simple Express app can be found under `/example`.
+
 Is it really *that* easy? - There is only one way to find out!
+
+Concepts
+--------
+
+* Usernames are unique, but can be changed
+* User ids are UUIDs (v1, time-based) and don't change over time
+* Tokens are UUIDs (v4, random, not time-based)
+* Passwords are being hashed and salted using bcrypt
+* User objects are separated from application-specific data
 
 Install
 -------
@@ -45,7 +56,7 @@ null { username: 'alex',
   token: '8b06cdea-1eed-421a-b36d-472b93db0b30' }
 ```
 
-Usernames need to be unique, otherwise error will be set:
+Usernames need to be unique, otherwise error will not be null:
 
 ```
 [Error: Username not available] undefined
@@ -81,7 +92,7 @@ db.accounts.auth('0bd61fac-a6ff-478e-ba0f-d0d131f72568', function(error, user) {
 });
 ```
 
-Checks if the given token is valid and returns the associated user object: 
+Checks if the given token is valid and returns the associated user object:
 
 ```
 null { id: '644ea4b3-f959-4bce-99e3-a1d2768a9984',
@@ -119,7 +130,7 @@ db.accounts.changeUsername('644ea4b3-f959-4bce-99e3-a1d2768a9984', 'alex2', func
 ```
 
 Changes the user's username to the passed in `newUsername`.
-The returned result object also contains new old and new username:
+The returned result object also contains the new and old username:
 
 ```
 null { username: 'alex2',
