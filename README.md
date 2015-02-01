@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/alexanderGugel/level-accounts.svg)](https://travis-ci.org/alexanderGugel/level-accounts)
+
 level-accounts
 ==============
 

@@ -6,7 +6,7 @@
   "scripts": {
     "test": "tape test/*.js; rm -rf test/db",
     "example": "node example/app.js",
-    "postinstall": "npm star level-accounts &> /dev/null || exit 0"
+    "postinstall": "npm star level-accounts &> /dev/null | exit 0"
   },
   "author": "",
   "license": "ISC",
