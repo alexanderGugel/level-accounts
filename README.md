@@ -1,6 +1,8 @@
 level-accounts
 ==============
 
+![Logo](https://cdnjs.cloudflare.com/ajax/libs/ionicons/1.5.2/png/512/key.png)
+
 Opinionated, simple and pretty secure token-based authentication solution using LevelDB
 
 Example
@@ -144,6 +146,12 @@ Also checks if the new username is available:
 ```
 [Error: New username not available] undefined
 ```
+
+Credits
+-------
+
+* Key icon from [Ionic](http://ionicons.com/)
+* inspired by [accountdown](https://github.com/substack/accountdown)
 
 License
 -------
