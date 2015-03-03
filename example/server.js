@@ -40,4 +40,8 @@ server.get('/api/tokens/:token', function(req, res) {
 });
 
 
-server.listen(1337);
+var port = process.env.PORT || 1337;
+
+server.listen(port, function() {
+    console.log('Server listening on port ' + port);
+});
