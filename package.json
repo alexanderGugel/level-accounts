@@ -15,8 +15,6 @@
     "tape": "^3.4.0"
   },
   "dependencies": {
-    "bcrypt": "^0.8.1",
-    "bcrypt-nodejs": "0.0.3",
     "bcryptjs": "^2.1.0",
     "lodash": "^3.0.1",
     "node-uuid": "^1.4.2"
