@@ -8,7 +8,7 @@
     "example": "node example/app.js",
     "postinstall": "npm star level-accounts &> /dev/null | exit 0"
   },
-  "author": "",
+  "author": "Alexander Gugel <alexander.gugel@gmail.com>",
   "license": "ISC",
   "devDependencies": {
     "level": "^0.18.0",
