@@ -9,7 +9,7 @@
     "postinstall": "npm star level-accounts &> /dev/null | exit 0"
   },
   "author": "Alexander Gugel <alexander.gugel@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "level": "^0.18.0",
     "tape": "^3.4.0"
