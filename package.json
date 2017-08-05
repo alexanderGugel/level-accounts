@@ -1,6 +1,6 @@
 {
   "name": "level-accounts",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Opinionated, simple and pretty secure token-based authentication solution using LevelDB",
   "main": "index.js",
   "scripts": {
